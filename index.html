@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FAMILY ARENA — Oila va Kattalar Uchun Intellektual 3D O‘yin</title>
+  <meta name="description" content="Family Arena — ota-onalar, kattalar va butun oila a'zolari uchun Blooket va Kahoot uslubidagi zamonaviy 3D intellektual savol-javob o‘yini.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Socket.io CDN for real-time multiplayer -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <!-- Canvas Confetti for extra celebratory screen effects -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- QRCode.js CDN for instant parent room join scanning -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- 3D WebGL Canvas Container -->
+  <div id="canvas-container"></div>
+
+  <!-- Ambient Overlay Lighting -->
+  <div class="ambient-glow"></div>
+  <div class="vignette-overlay"></div>
+
+  <!-- Audio Controls Top Floating Bar -->
+  <header class="app-header">
+    <div class="brand-mini" id="header-brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-text">FAMILY<span class="gold-text">ARENA</span></span>
+    </div>
+
+    <div class="header-actions">
+      <!-- Player Profile Pill -->
+      <button class="profile-pill-btn" id="btn-profile-pill" title="Profil va avatar">
+        <span class="player-avatar-icon" id="header-avatar">👑</span>
+        <span class="player-name-text" id="header-player-name">Bilimdon</span>
+      </button>
+
+      <!-- Sound & Music Toggles -->
+      <button class="icon-btn" id="btn-sound-toggle" title="Ovoz effektlari (Yoqilgan)">
+        <span id="sound-icon">🔊</span>
+      </button>
+      <button class="icon-btn" id="btn-music-toggle" title="Orqa fon musiqasi (Yoqilgan)">
+        <span id="music-icon">🎵</span>
+      </button>
+      <button class="icon-btn" id="btn-settings-open" title="Sozlamalar va Grafika">
+        <span>⚙️</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main id="app">
+
+    <!-- ==============================================
+         SCREEN 1: MAIN MENU (Bosh Sahifa)
+    =============================================== -->
+    <section id="screen-main-menu" class="screen active">
+      <div class="menu-hero-container">
+        <!-- Floating 3D-styled Logo -->
+        <div class="hero-badge">
+          <span class="pulse-dot"></span> INTELLEKTUAL OILA ARENASI
+        </div>
+        <h1 class="main-title">
+          FAMILY <span class="gradient-text">ARENA</span>
+        </h1>
+        <p class="hero-subtitle">
+          Ota-onalar va butun oila uchun maxsus yaratilgan yuqori darajadagi 3D bilimlar jangi. Savollarga tez va aniq javob bering, yangi cho‘qqilarni zabt eting!
+        </p>
+
+        <!-- Primary Action Buttons -->
+        <div class="action-buttons-group">
+          <button class="btn btn-primary btn-large glow-gold" id="btn-quick-play">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-content">
+              <strong>Tezkor O‘yin</strong>
+              <small>Klassik 10 ta saralangan savol</small>
+            </span>
+          </button>
+
+          <button class="btn btn-secondary btn-large glow-purple" id="btn-modes-menu">
+            <span class="btn-icon">🎮</span>
+            <span class="btn-content">
+              <strong>O‘yin Rejimlari</strong>
+              <small>Survival, Time Attack, Daily</small>
+            </span>
+          </button>
+
+          <button class="btn btn-special btn-large glow-cyan" id="btn-family-battle">
+            <span class="btn-icon">👨‍👩‍👧‍👦</span>
+            <span class="btn-content">
+              <strong>Oila Bilan O‘ynash</strong>
+              <small>Bir qurilmada 2-6 o‘yinchi navbati</small>
+            </span>
+          </button>
+
+          <button class="btn btn-glass btn-large glow-blue" id="btn-online-multiplayer">
+            <span class="btn-icon">🌐</span>
+            <span class="btn-content">
+              <strong>Internet Multiplayer</strong>
+              <small>Xona kodi bilan do‘stlar bilan</small>
+            </span>
+          </button>
+        </div>
+
+        <!-- Secondary Navigation Bar -->
+        <div class="menu-subnav">
+          <button class="subnav-btn" id="btn-categories-view">
+            <span>📚</span> Kategoriyalar (10)
+          </button>
+          <button class="subnav-btn" id="btn-leaderboard-view">
+            <span>🏆</span> Eng Yaxshi Natijalar
+          </button>
+          <button class="subnav-btn" id="btn-rules-view">
+            <span>📜</span> O‘yin Qoidalari
+          </button>
+          <button class="subnav-btn" id="btn-stats-view">
+            <span>📊</span> Mening Statistikam
+          </button>
+        </div>
+
+        <!-- Quick Info Ticker -->
+        <div class="quick-facts-card">
+          <div class="fact-item">
+            <span class="fact-num" id="stat-total-questions">150+</span>
+            <span class="fact-label">Saralangan Savollar</span>
+          </div>
+          <div class="fact-divider"></div>
+          <div class="fact-item">
+            <span class="fact-num">10</span>
+            <span class="fact-label">Kategoriyalar</span>
+          </div>
+          <div class="fact-divider"></div>
+          <div class="fact-item">
+            <span class="fact-num">5</span>
+            <span class="fact-label">O‘yin Rejimlari</span>
+          </div>
+          <div class="fact-divider"></div>
+          <div class="fact-item">
+            <span class="fact-num" id="stat-user-best">0</span>
+            <span class="fact-label">Mening Rekordim</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 2: GAME MODES SELECTION (Rejimlar)
+    =============================================== -->
+    <section id="screen-game-modes" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-modes">
+          <span>←</span> Orqaga
+        </button>
+        <h2 class="section-title">O‘YIN REJIMINI TANLANG</h2>
+        <p class="section-desc">O‘zingizga va oilangizga mos qiyinchilik va shartlarni tanlang</p>
+      </div>
+
+      <div class="modes-grid">
+        <!-- Mode 1: Classic Quiz -->
+        <div class="mode-card glow-hover" data-mode="classic">
+          <div class="mode-badge">Standart</div>
+          <div class="mode-icon-box gold">🎯</div>
+          <h3>Classic Quiz</h3>
+          <p>Har savol uchun 20 soniya, tezkor javob bonusi va o‘quvchi-oila reytingi. O‘z bilimingizni tinch sinab ko‘ring.</p>
+          <div class="mode-meta">
+            <span>⏱️ 20 sek / savol</span>
+            <span>🔥 10 savol</span>
+          </div>
+          <button class="btn btn-primary btn-block mode-select-btn">O‘ynash</button>
+        </div>
+
+        <!-- Mode 2: Survival -->
+        <div class="mode-card glow-hover" data-mode="survival">
+          <div class="mode-badge danger">3 Jon ❤️</div>
+          <div class="mode-icon-box red">🛡️</div>
+          <h3>Survival (Omon Qolish)</h3>
+          <p>Sizda atigi 3 ta jon bor! Har bir xato javob 1 jonni olib ketadi. Imkon qadar ko‘p savolga to‘g‘ri javob berib tirik qoling.</p>
+          <div class="mode-meta">
+            <span>❤️ 3 Jon</span>
+            <span>♾️ Cheksiz to‘lqin</span>
+          </div>
+          <button class="btn btn-danger btn-block mode-select-btn">Jangga Kirish</button>
+        </div>
+
+        <!-- Mode 3: Time Attack -->
+        <div class="mode-card glow-hover" data-mode="timeattack">
+          <div class="mode-badge warning">60 Soniya ⚡</div>
+          <div class="mode-icon-box orange">⏳</div>
+          <h3>Time Attack (Vaqt Poygasi)</h3>
+          <p>Jami 60 soniya vaqt beriladi. Har bir to‘g‘ri javob +3 soniya qo‘shadi, xato javob esa -2 soniya olib qo‘yadi!</p>
+          <div class="mode-meta">
+            <span>⏱️ 60 soniya umumiy</span>
+            <span>⚡ Vaqt bonuslari</span>
+          </div>
+          <button class="btn btn-warning btn-block mode-select-btn">Poygani Boshlash</button>
+        </div>
+
+        <!-- Mode 4: Family Battle -->
+        <div class="mode-card glow-hover" data-mode="family">
+          <div class="mode-badge cyan">Oila Davrasi 👨‍👩‍👧‍👦</div>
+          <div class="mode-icon-box purple">👑</div>
+          <h3>Family Battle (Oila Chempionati)</h3>
+          <p>Bitta telefon yoki kompyuterda navbatma-navbat 2 dan 6 gacha oila a'zosi o‘ynaydi. Kim eng aqlli ekanini aniqlang!</p>
+          <div class="mode-meta">
+            <span>👥 2-6 O‘yinchi</span>
+            <span>🏆 Yakuniy Podium</span>
+          </div>
+          <button class="btn btn-special btn-block mode-select-btn">Oila Jangini Boshlash</button>
+        </div>
+
+        <!-- Mode 5: Daily Challenge -->
+        <div class="mode-card glow-hover" data-mode="daily">
+          <div class="mode-badge gold">Kunlik Maxsus 📅</div>
+          <div class="mode-icon-box cyan">🌟</div>
+          <h3>Daily Challenge (Kunlik Sinov)</h3>
+          <p>Bugungi sana uchun maxsus tanlangan 10 ta savol. Barcha o‘yinchilarga bir xil savollar beriladi. Kun qahramoni bo‘ling!</p>
+          <div class="mode-meta">
+            <span id="daily-date-label">📅 Bugun</span>
+            <span>⭐ Maxsus nishon</span>
+          </div>
+          <button class="btn btn-cyan btn-block mode-select-btn">Bugungi Sinov</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 3: FAMILY BATTLE SETUP (Oila A'zolari)
+    =============================================== -->
+    <section id="screen-family-setup" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-family">
+          <span>←</span> Rejimlarga Qaytish
+        </button>
+        <h2 class="section-title">OILA A'ZOLARINI RO‘YXATGA OLING</h2>
+        <p class="section-desc">Har bir o‘yinchi uchun ism va sevimli avatar tanlang</p>
+      </div>
+
+      <div class="family-setup-card">
+        <div class="player-count-picker">
+          <label>O‘yinchilar soni:</label>
+          <div class="count-selector-btns">
+            <button class="count-btn" data-count="2">2 O‘yinchi</button>
+            <button class="count-btn active" data-count="3">3 O‘yinchi</button>
+            <button class="count-btn" data-count="4">4 O‘yinchi</button>
+            <button class="count-btn" data-count="5">5 O‘yinchi</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Family Members List -->
+        <div class="family-members-inputs" id="family-members-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="rounds-selector">
+          <label>Har bir o‘yinchiga beriladigan savollar soni:</label>
+          <select id="select-family-rounds" class="custom-select">
+            <option value="3">3 ta savol (Tezkor o‘yin)</option>
+            <option value="5" selected>5 ta savol (Standart jang)</option>
+            <option value="8">8 ta savol (Katta turnir)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-special btn-large btn-block" id="btn-start-family-battle">
+          <span>🏆</span> OILA ARENASIGA CHIQISH
+        </button>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 4: CATEGORY SELECTOR (Kategoriyalar)
+    =============================================== -->
+    <section id="screen-categories" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-cats">
+          <span>←</span> Bosh Menyu
+        </button>
+        <h2 class="section-title">BILIM KATEGORIYALARI</h2>
+        <p class="section-desc">O‘zingiz qiziqqan yo‘nalishni tanlang yoki barcha mavzularni aralash o‘ynang</p>
+      </div>
+
+      <div class="categories-grid" id="categories-grid">
+        <!-- Rendered by JS dynamically -->
+      </div>
+
+      <div class="category-footer">
+        <button class="btn btn-primary btn-large" id="btn-play-all-categories">
+          <span>🎲</span> BARCHA KATEGORIYALARNI ARALASH O‘YNASH
+        </button>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 5: ACTIVE GAMEPLAY (Savol-Javob Arenasi)
+    =============================================== -->
+    <section id="screen-gameplay" class="screen">
+      <!-- HUD / Top Bar -->
+      <div class="gameplay-hud">
+        <!-- Left: Question Counter & Category Badge -->
+        <div class="hud-left">
+          <div class="question-tracker">
+            <span class="tracker-label">Savol</span>
+            <span class="tracker-current" id="hud-question-num">1</span>
+            <span class="tracker-slash">/</span>
+            <span class="tracker-total" id="hud-question-total">10</span>
+          </div>
+          <div class="category-pill" id="hud-category-badge">O‘zbekiston Tarixi</div>
+          <div class="difficulty-pill" id="hud-difficulty-badge">O‘rta</div>
+        </div>
+
+        <!-- Center: Circular or Linear Timer & Family Turn Notification -->
+        <div class="hud-center">
+          <!-- Active Player Banner (Family mode) -->
+          <div class="family-active-banner hidden" id="family-turn-banner">
+            <span class="family-avatar" id="family-turn-avatar">👨‍💼</span>
+            <span class="family-turn-name" id="family-turn-name">Dadam</span>ning navbati!
+          </div>
+
+          <!-- Timer Dial -->
+          <div class="timer-dial-container" id="timer-container">
+            <svg class="timer-svg" viewBox="0 0 100 100">
+              <circle class="timer-track" cx="50" cy="50" r="42"></circle>
+              <circle class="timer-progress" id="timer-progress-circle" cx="50" cy="50" r="42"></circle>
+            </svg>
+            <div class="timer-number-wrapper">
+              <span class="timer-number" id="hud-timer-num">20</span>
+              <span class="timer-unit">sek</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Score & Lives / Combo Multiplier -->
+        <div class="hud-right">
+          <!-- Survival Hearts Container -->
+          <div class="lives-container hidden" id="hud-lives-container">
+            <span class="heart active">❤️</span>
+            <span class="heart active">❤️</span>
+            <span class="heart active">❤️</span>
+          </div>
+
+          <!-- Combo Multiplier Badge -->
+          <div class="combo-badge hidden" id="hud-combo-badge">
+            <span class="combo-flame">🔥</span>
+            <span class="combo-val" id="hud-combo-val">x1.5</span>
+            <span class="combo-text">COMBO!</span>
+          </div>
+
+          <!-- Score Counter -->
+          <div class="score-card">
+            <span class="score-label">Ochko</span>
+            <span class="score-value" id="hud-score-val">0</span>
+            <span class="floating-score" id="hud-floating-score">+0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Card Container (Center Stage) -->
+      <div class="question-stage">
+        <div class="question-card" id="question-card">
+          <div class="card-glow-border"></div>
+          <h2 class="question-text" id="question-text">
+            Savol yuklanmoqda...
+          </h2>
+        </div>
+
+        <!-- 4 Answer Options Grid -->
+        <div class="answers-grid" id="answers-grid">
+          <button class="answer-btn" data-index="0" id="btn-ans-0">
+            <span class="opt-key">A</span>
+            <span class="opt-text" id="ans-text-0">Variant 1</span>
+            <span class="opt-status-icon"></span>
+          </button>
+          <button class="answer-btn" data-index="1" id="btn-ans-1">
+            <span class="opt-key">B</span>
+            <span class="opt-text" id="ans-text-1">Variant 2</span>
+            <span class="opt-status-icon"></span>
+          </button>
+          <button class="answer-btn" data-index="2" id="btn-ans-2">
+            <span class="opt-key">C</span>
+            <span class="opt-text" id="ans-text-2">Variant 3</span>
+            <span class="opt-status-icon"></span>
+          </button>
+          <button class="answer-btn" data-index="3" id="btn-ans-3">
+            <span class="opt-key">D</span>
+            <span class="opt-text" id="ans-text-3">Variant 4</span>
+            <span class="opt-status-icon"></span>
+          </button>
+        </div>
+
+        <!-- Explanation Card (Shown after answering) -->
+        <div class="explanation-card hidden" id="explanation-card">
+          <div class="explanation-header">
+            <span class="exp-icon" id="exp-status-icon">💡</span>
+            <h4 id="exp-title">To‘g‘ri javob izohi:</h4>
+          </div>
+          <p class="exp-body" id="exp-text">
+            Bu yerda savolning nima uchun to‘g‘ri ekanligi haqida ma'lumot beriladi.
+          </p>
+          <button class="btn btn-primary btn-next-question glow-gold" id="btn-next-question">
+            <span>Keyingi Savol</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Status Bar -->
+      <div class="gameplay-footer">
+        <button class="btn-quit-game" id="btn-quit-game" title="O‘yindan chiqish">
+          <span>✕</span> Chiqish
+        </button>
+        <div class="keyboard-hints">
+          Klaviatura: <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> yoki <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd> | <kbd>Space</kbd> keyingisi
+        </div>
+        <div class="speed-bonus-indicator" id="speed-indicator">
+          <span>⚡ Tezlik bonusi faol</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 6: GAME OVER & VICTORY PODIUM (Natijalar)
+    =============================================== -->
+    <section id="screen-game-over" class="screen">
+      <div class="game-over-container">
+        <!-- Result Ribbon Badge -->
+        <div class="result-badge-container">
+          <span class="result-trophy-icon" id="result-trophy">🏆</span>
+          <h2 class="result-title" id="result-title">AJOYIB G‘ALABA!</h2>
+          <p class="result-subtitle" id="result-subtitle">Siz ajoyib intellektual natija ko‘rsatdingiz!</p>
+        </div>
+
+        <!-- Family Battle Winner Podium (Visible only in family mode) -->
+        <div class="family-podium-wrapper hidden" id="family-podium-wrapper">
+          <h3 class="podium-title">👑 OILA CHEMPIONATI G‘OLIBLARI 👑</h3>
+          <div class="podium-display" id="podium-display">
+            <!-- Dynamically populated with 1st, 2nd, 3rd places -->
+          </div>
+        </div>
+
+        <!-- Single Player Score Cards Summary -->
+        <div class="stats-summary-grid" id="single-player-stats-grid">
+          <div class="summary-card">
+            <span class="sum-icon">⭐</span>
+            <span class="sum-label">Umumiy Ochko</span>
+            <span class="sum-value gold" id="sum-score-val">0</span>
+          </div>
+          <div class="summary-card">
+            <span class="sum-icon">🎯</span>
+            <span class="sum-label">Aniqlik</span>
+            <span class="sum-value green" id="sum-accuracy-val">0%</span>
+          </div>
+          <div class="summary-card">
+            <span class="sum-icon">🔥</span>
+            <span class="sum-label">Maksimal Kombo</span>
+            <span class="sum-value purple" id="sum-streak-val">x1.0</span>
+          </div>
+          <div class="summary-card">
+            <span class="sum-icon">⚡</span>
+            <span class="sum-label">O‘rtacha Tezlik</span>
+            <span class="sum-value cyan" id="sum-speed-val">0s</span>
+          </div>
+        </div>
+
+        <!-- Educational Review / Performance Rating -->
+        <div class="performance-eval-card" id="performance-eval">
+          <span class="eval-badge" id="eval-rank">PROFESSOR</span>
+          <p id="eval-text">Siz oilangizning eng bilimdon vakilisiz!</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="game-over-actions">
+          <button class="btn btn-primary btn-large glow-gold" id="btn-replay-game">
+            <span>🔄</span> Qaytadan O‘ynash
+          </button>
+          <button class="btn btn-secondary btn-large" id="btn-return-home">
+            <span>🏠</span> Bosh Menyu
+          </button>
+          <button class="btn btn-glass btn-large" id="btn-share-result">
+            <span>📋</span> Natijani Nusxalash
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 7: ONLINE MULTIPLAYER (Tarmoq O‘yini)
+    =============================================== -->
+    <section id="screen-multiplayer" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-multiplayer">
+          <span>←</span> Bosh Menyu
+        </button>
+        <h2 class="section-title">ONLINE MULTIPLAYER ARENA</h2>
+        <p class="section-desc">Haqiqiy Node.js & Socket.IO serveri orqali do‘stlar bilan bir vaqtda o‘ynang</p>
+      </div>
+
+      <div class="multiplayer-hub-card">
+        <!-- Connection Status Indicator -->
+        <div class="connection-status-pill" id="multiplayer-status-pill">
+          <span class="status-dot offline" id="net-status-dot"></span>
+          <span id="net-status-text">Server holati tekshirilmoqda...</span>
+        </div>
+
+        <!-- Server Architecture Info Box -->
+        <div class="server-info-banner">
+          <div class="info-icon">ℹ️</div>
+          <div class="info-text">
+            <strong>Haqiqiy Server Tizimi:</strong> Loyihada to‘liq <code>server.js</code> va <code>package.json</code> mavjud. Kompyuterda <code>npm start</code> orqali serverni ishga tushirishingiz va xona ochib do‘stlaringizni taklif qilishingiz mumkin!
+          </div>
+        </div>
+
+        <div class="multiplayer-actions-grid">
+          <!-- Create Room -->
+          <div class="mp-card">
+            <div class="mp-card-icon">🏠</div>
+            <h3>Yangi Xona Yaratish</h3>
+            <p>Do‘stlaringiz yoki qarindoshlaringiz uchun maxsus 4 xonali PIN kodli xona oching.</p>
+            <button class="btn btn-primary btn-block glow-gold" id="btn-mp-create-room">
+              Xona Ochish (Host)
+            </button>
+          </div>
+
+          <!-- Join Room -->
+          <div class="mp-card">
+            <div class="mp-card-icon">🔑</div>
+            <h3>Xonaga Qo‘shilish</h3>
+            <p>Do‘stingiz bergan 4 xonali maxsus kodni kiriting va jangga qo‘shiling.</p>
+            <div class="pin-input-group">
+              <input type="text" id="input-room-code" maxlength="6" placeholder="KOD (masalan: ARENA)" class="pin-input" />
+              <button class="btn btn-secondary" id="btn-mp-join-room">Ulanish</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Room Lobby View (Hidden by default, shown when room is active) -->
+        <div class="lobby-view-card hidden" id="lobby-view-card">
+          <!-- Top Lobby Header -->
+          <div class="lobby-header">
+            <div class="lobby-header-badge">LIVE MULTIPLAYER LOBBY</div>
+            <p>Oila a'zolaringiz va do‘stlaringizni arenaga chorlang!</p>
+          </div>
+
+          <!-- Professional QR-Code Showcase Card -->
+          <div class="lobby-qr-section" id="lobby-qr-section">
+            <div class="qr-showcase-card">
+              <!-- Left: QR Code Display Container -->
+              <div class="qr-canvas-wrapper" id="qr-canvas-wrapper" title="Kattalashtirish uchun bosing">
+                <div id="qrcode-box" class="qrcode-box"></div>
+                <div class="qr-zoom-hint">🔍 Kattalashtirish</div>
+              </div>
+
+              <!-- Right: Room Details & Quick Actions -->
+              <div class="qr-details-column">
+                <div class="room-code-display-box">
+                  <span class="code-label">XONA KODI:</span>
+                  <div class="code-badge-copy-wrap">
+                    <span class="room-code-badge" id="lobby-room-code">----</span>
+                    <button class="btn-copy-code" id="btn-copy-room-code" title="Xona kodini nusxalash">
+                      📋 Nusxa
+                    </button>
+                  </div>
+                </div>
+
+                <p class="qr-invite-desc">
+                  Telefon kamerasini ushbu QR-kodga qaratish orqali ota-onalar va bolalar darhol bir zumda o‘yinga qo‘shila oladi!
+                </p>
+
+                <!-- 5 Essential QR Actions -->
+                <div class="qr-actions-row">
+                  <button class="btn btn-primary btn-sm" id="btn-qr-zoom" title="Kattalashtirib ko‘rish">
+                    <span>🔍</span> Kattalashtirish
+                  </button>
+                  <button class="btn btn-secondary btn-sm" id="btn-qr-download" title="PNG formatida yuklab olish">
+                    <span>💾</span> PNG Yuklab Olish
+                  </button>
+                  <button class="btn btn-glass btn-sm" id="btn-copy-invite-link" title="Taklif havolasini nusxalash">
+                    <span>🔗</span> Havolani Nusxalash
+                  </button>
+                  <button class="btn btn-glass btn-sm" id="btn-share-invite" title="Havolani ulashish">
+                    <span>📱</span> Ulashish
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Parents 4-Step Visual Guide -->
+            <div class="parents-guide-box">
+              <h4 class="guide-title">👨‍👩‍👧‍👦 OTA-ONALAR UCHUN QO‘LLANMA:</h4>
+              <div class="guide-steps-grid">
+                <div class="guide-step">
+                  <span class="step-num">1</span>
+                  <span class="step-icon">📷</span>
+                  <span class="step-text">Kamerangizni oching</span>
+                </div>
+                <div class="guide-step">
+                  <span class="step-num">2</span>
+                  <span class="step-icon">🎯</span>
+                  <span class="step-text">QR-kodni skanerlang</span>
+                </div>
+                <div class="guide-step">
+                  <span class="step-num">3</span>
+                  <span class="step-icon">✍️</span>
+                  <span class="step-text">Ismingizni kiriting</span>
+                </div>
+                <div class="guide-step">
+                  <span class="step-num">4</span>
+                  <span class="step-icon">🚀</span>
+                  <span class="step-text">O‘yinga qo‘shiling!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lobby Players List -->
+          <div class="lobby-players-list">
+            <h4>Xonadagi O‘yinchilar (<span id="lobby-player-count">1</span>/8):</h4>
+            <ul id="lobby-players-ul" class="lobby-ul">
+              <!-- Populated by socket events -->
+            </ul>
+          </div>
+
+          <!-- Lobby Controls -->
+          <div class="lobby-controls">
+            <button class="btn btn-special btn-large glow-gold" id="btn-lobby-start-game" disabled>
+              O‘yinni Boshlash (Faqat Host)
+            </button>
+            <button class="btn btn-danger" id="btn-lobby-leave">
+              Xonani Tark Etish
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 8: LEADERBOARD & STATS (Reyting)
+    =============================================== -->
+    <section id="screen-leaderboard" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-leaderboard">
+          <span>←</span> Bosh Menyu
+        </button>
+        <h2 class="section-title">ENG YAXSHI NATIJALAR</h2>
+        <p class="section-desc">Oilangiz va o‘yinchilarning eng yuqori rekordlari</p>
+      </div>
+
+      <div class="leaderboard-wrapper">
+        <div class="leaderboard-tabs">
+          <button class="tab-btn active" data-tab="local">Mahalliy Rekordlar</button>
+          <button class="tab-btn" data-tab="categories">Kategoriyalar Bo‘yicha</button>
+        </div>
+
+        <div class="leaderboard-table-container">
+          <table class="leaderboard-table" id="leaderboard-table">
+            <thead>
+              <tr>
+                <th>O‘rin</th>
+                <th>O‘yinchi</th>
+                <th>Rejim</th>
+                <th>Aniqlik</th>
+                <th>Ochko</th>
+                <th>Sana</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="leaderboard-footer">
+          <button class="btn btn-glass" id="btn-clear-leaderboard">
+            🗑️ Tarixni Tozalash
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 9: RULES & HOW TO PLAY (Qoidalar)
+    =============================================== -->
+    <section id="screen-rules" class="screen">
+      <div class="screen-header">
+        <button class="btn-back" id="btn-back-from-rules">
+          <span>←</span> Bosh Menyu
+        </button>
+        <h2 class="section-title">O‘YIN QOIDALARI VA MASLAHATLAR</h2>
+        <p class="section-desc">Family Arena o‘yinida qanday qilib g‘alaba qozonish mumkin?</p>
+      </div>
+
+      <div class="rules-grid">
+        <div class="rule-card">
+          <div class="rule-num">1</div>
+          <h3>Tezkorlik Bonusi</h3>
+          <p>Har bir savol uchun 1000 bazaviy ochko beriladi. Qancha tez javob bersangiz, qo‘shimcha 500 gacha tezlik bonusi olasiz!</p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-num">2</div>
+          <h3>Combo Tizimi</h3>
+          <p>Ketma-ket to‘g‘ri javoblar ochkolaringizni oshiradi: 2 ta to‘g‘ri javob = 1.2x, 3 ta = 1.5x, 4 ta = 2.0x, 5+ ta = 2.5x!</p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-num">3</div>
+          <h3>Oila A'zolari Bilan Jang</h3>
+          <p>Family Battle rejimida butun oila bitta qurilmada navbat bilan o‘ynaydi. Har bir a'zo o‘z bilimi bilan umumiy g‘oliblik uchun kurashadi.</p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-num">4</div>
+          <h3>Omon Qolish (Survival)</h3>
+          <p>Atigi 3 ta joningiz bor. Xato qilmasdan iloji boricha ko‘proq savolga javob berib, o‘z rekordlaringizni yangilang.</p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-num">5</div>
+          <h3>Ilmiy va To‘g‘ri Izohlar</h3>
+          <p>Har bir savolga javob berilgach, nima uchun aynan shu javob to‘g‘riligi haqida qisqa va qiziqarli ma'lumot beriladi.</p>
+        </div>
+
+        <div class="rule-card">
+          <div class="rule-num">6</div>
+          <h3>3D Visual Effektlar</h3>
+          <p>To‘g‘ri javob berganda arena yashil nur sochadi, xato bo‘lganda qizil to‘lqin paydo bo‘ladi, g‘alaba qozonganda esa konfetti portlaydi!</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==============================================
+       MODALS: SETTINGS, PROFILE, QUIT CONFIRMATION
+  =============================================== -->
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop hidden" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>O‘yin Sozlamalari</h3>
+        <button class="modal-close-btn" id="btn-close-settings">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Ovoz Effektlari (SFX)</strong>
+            <small>Tugma bosish va to‘g‘ri/xato signallari</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-sfx" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Orqa Fon Musiqasi (Synth Chill)</strong>
+            <small>Web Audio API orqali generatsiya qilingan ohang</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-music" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>3D Grafika Sifati</strong>
+            <small>Zarrachalar va yorug‘lik kuchi</small>
+          </div>
+          <select id="select-graphics" class="custom-select small">
+            <option value="high" selected>Ultra (Yuqori 60 FPS)</option>
+            <option value="medium">O‘rta (Tejamkor)</option>
+            <option value="low">Past (Kuchli optimizatsiya)</option>
+          </select>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Avtomatik Keyingi Savolga O‘tish</strong>
+            <small>Izohni ko‘rsatib 4 soniyadan keyin o‘zi o‘tadi</small>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-autoadvance">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-info">
+            <strong>Multiplayer Server Manzili</strong>
+            <small>Lokal yoki masofaviy Socket.io serveri</small>
+          </div>
+          <input type="text" id="input-server-url" value="http://localhost:3000" class="server-url-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-block" id="btn-save-settings">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE EDIT MODAL -->
+  <div class="modal-backdrop hidden" id="modal-profile">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>O‘yinchi Profili</h3>
+        <button class="modal-close-btn" id="btn-close-profile">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="avatar-selection-grid">
+          <label>Avatar tanlang:</label>
+          <div class="avatars-picker" id="avatars-picker">
+            <span class="avatar-choice active" data-avatar="👑">👑</span>
+            <span class="avatar-choice" data-avatar="🦁">🦁</span>
+            <span class="avatar-choice" data-avatar="🦉">🦉</span>
+            <span class="avatar-choice" data-avatar="🚀">🚀</span>
+            <span class="avatar-choice" data-avatar="⚡">⚡</span>
+            <span class="avatar-choice" data-avatar="💎">💎</span>
+            <span class="avatar-choice" data-avatar="🧠">🧠</span>
+            <span class="avatar-choice" data-avatar="🎯">🎯</span>
+            <span class="avatar-choice" data-avatar="🌟">🌟</span>
+            <span class="avatar-choice" data-avatar="🔥">🔥</span>
+            <span class="avatar-choice" data-avatar="🛡️">🛡️</span>
+            <span class="avatar-choice" data-avatar="🏆">🏆</span>
+          </div>
+        </div>
+
+        <div class="input-form-group">
+          <label for="input-player-name">Ismingiz yoki Taxallusingiz:</label>
+          <input type="text" id="input-player-name" maxlength="15" value="Bilimdon" class="custom-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-block" id="btn-save-profile">Profilni Yangilash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM QUIT MODAL -->
+  <div class="modal-backdrop hidden" id="modal-quit-confirm">
+    <div class="modal-card small-modal">
+      <div class="modal-header">
+        <h3>O‘yinni To‘xtatish</h3>
+      </div>
+      <div class="modal-body">
+        <p>Haqiqatan ham joriy o‘yindan chiqmoqchimisiz? To‘plangan ochkolar saqlanmasligi mumkin.</p>
+      </div>
+      <div class="modal-footer modal-actions-row">
+        <button class="btn btn-glass" id="btn-quit-cancel">Bekor Qilish</button>
+        <button class="btn btn-danger" id="btn-quit-confirm">Chiqish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main Game Script -->
+  <script src="index.js"></script>
+</body>
+</html>
